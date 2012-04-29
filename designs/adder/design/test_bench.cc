@@ -30,12 +30,12 @@ void HalfAdderTestBench::generate_stimulus()
     {
         for (int ib = 0; ib < 2; ib++)
         {
-            stimulus_a.write(static_cast<sc_bit>(ia));
-            stimulus_b.write(static_cast<sc_bit>(ib));
+            stimulus_a.write(static_cast<bool>(ia));
+            stimulus_b.write(static_cast<bool>(ib));
             __ia = ia;
             __ib = ib;
             
-            cout << "generate_stimulus" << ia << "," << ib << "\n";
+            cout << "generate_stimulus: " << ia << "," << ib << "\n";
             __ready = true;
             wait(__checked);      
         }
@@ -47,7 +47,10 @@ void HalfAdderTestBench::generate_stimulus()
 
 void HalfAdderTestBench::check()
 {
-    while(!__ready);   
+    if (!__ready)
+    {
+        return;
+    }
     
     cout << "check::begin" << __ia << "," << __ib << "\n";
     
