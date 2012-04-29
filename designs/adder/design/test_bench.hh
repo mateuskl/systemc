@@ -9,7 +9,7 @@ SC_MODULE(HalfAdderTestBench)
     
     // obtained values
     sc_in<sc_bit> obtained_s;
-    sc_int<sc_bit> obtained_c;
+    sc_in<sc_bit> obtained_c;
  
  
     void generate_stimulus();

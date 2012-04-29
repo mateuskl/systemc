@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void __init()
+void HalfAdderTestBench::__init()
 {
     // S = A XOR B
     __expected_S[0][0] = 0;
@@ -28,8 +28,8 @@ void HalfAdderTestBench::generate_stimulus()
     {
         for (int ib = 0; ib < 2; ib++)
         {
-            stimulus_a.write(ia);
-            stimulus_b.write(ib);
+            stimulus_a.write(static_cast<sc_bit>(ia));
+            stimulus_b.write(static_cast<sc_bit>(ib));
             __ia = ia;
             __ib = ib;
             wait(__checked);      
@@ -45,5 +45,5 @@ void HalfAdderTestBench::check()
     cout << "A: " << __ia << " B: " << __ib << " => " <<  "expS: " << __expected_S[__ia][__ib] << " obtS: " << obtained_s.read() << " expC: " << __expected_C[__ia][__ib] << " obtC: " << obtained_c.read();
     assert(__expected_S[__ia][__ib] == obtained_s.read());
     assert(__expected_C[__ia][__ib] == obtained_c.read());
-    __checked.signal();  
+    __checked.notify();  
 }
