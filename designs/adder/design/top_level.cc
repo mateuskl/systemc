@@ -6,10 +6,10 @@
 
 int sc_main(int argc, char *argv[])
 {
-    sc_signal<sc_bit> A;
-    sc_signal<sc_bit> B;
-    sc_signal<sc_bit> S;
-    sc_signal<sc_bit> C;
+    sc_signal<bool> A;
+    sc_signal<bool> B;
+    sc_signal<bool> S;
+    sc_signal<bool> C;
     
     HalfAdder ha("Adder");
     HalfAdderTestBench tb("TestBench");

@@ -4,11 +4,11 @@ SC_MODULE(HalfAdder)          // module (class) declaration
 {
     
     // ports
-    sc_in<sc_bit> A;
-    sc_in<sc_bit> B;
+    sc_in<bool> A;
+    sc_in<bool> B;
   
-    sc_out<sc_bit> S;
-    sc_out<sc_bit> C;
+    sc_out<bool> S;
+    sc_out<bool> C;
  
  
     // process

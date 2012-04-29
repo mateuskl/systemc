@@ -4,12 +4,12 @@ SC_MODULE(HalfAdderTestBench)
 {
     
     // stimulus
-    sc_out<sc_bit> stimulus_a;
-    sc_out<sc_bit> stimulus_b;
+    sc_out<bool> stimulus_a;
+    sc_out<bool> stimulus_b;
     
     // obtained values
-    sc_in<sc_bit> obtained_s;
-    sc_in<sc_bit> obtained_c;
+    sc_in<bool> obtained_s;
+    sc_in<bool> obtained_c;
  
  
     void generate_stimulus();
@@ -33,8 +33,8 @@ private:
 private:
     sc_event __checked;
 
-    sc_bit __expected_S[2][2];
-    sc_bit __expected_C[2][2];
+    bool __expected_S[2][2];
+    bool __expected_C[2][2];
     int __ia;
     int __ib;
     
