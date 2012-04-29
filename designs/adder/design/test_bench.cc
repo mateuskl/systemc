@@ -8,6 +8,8 @@ using namespace std;
 
 void HalfAdderTestBench::__init()
 {
+    __ready = false;
+    
     // S = A XOR B
     __expected_S[0][0] = 0;
     __expected_S[0][1] = 1;
@@ -32,6 +34,9 @@ void HalfAdderTestBench::generate_stimulus()
             stimulus_b.write(static_cast<sc_bit>(ib));
             __ia = ia;
             __ib = ib;
+            
+            cout << "generate_stimulus" << ia << "," << ib << "\n";
+            __ready = true;
             wait(__checked);      
         }
     }
@@ -42,8 +47,16 @@ void HalfAdderTestBench::generate_stimulus()
 
 void HalfAdderTestBench::check()
 {
+    while(!__ready);   
+    
+    cout << "check::begin" << __ia << "," << __ib << "\n";
+    
     cout << "A: " << __ia << " B: " << __ib << " => " <<  "expS: " << __expected_S[__ia][__ib] << " obtS: " << obtained_s.read() << " expC: " << __expected_C[__ia][__ib] << " obtC: " << obtained_c.read();
     assert(__expected_S[__ia][__ib] == obtained_s.read());
     assert(__expected_C[__ia][__ib] == obtained_c.read());
+    
+    __ready = false;
     __checked.notify();  
+    
+    cout << "check::end\n";
 }
