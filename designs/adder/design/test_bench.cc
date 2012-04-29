@@ -8,7 +8,7 @@ using namespace std;
 
 void HalfAdderTestBench::__init()
 {
-    __ready = false;
+    // __ready = false;
     
     // S = A XOR B
     __expected_S[0][0] = 0;
@@ -36,30 +36,36 @@ void HalfAdderTestBench::generate_stimulus()
             __ib = ib;
             
             cout << "generate_stimulus: " << ia << "," << ib << "\n";
-            __ready = true;
-            wait(__checked);      
+            // __ready = true;
+            // wait(__checked);
         }
     }
     
-    sc_stop();
+    // sc_stop();
 }
 
 
 void HalfAdderTestBench::check()
 {
+    /*
     if (!__ready)
     {
         return;
     }
+    */
     
-    cout << "check::begin" << __ia << "," << __ib << "\n";
+    if ((__ia == 0 || __ia == 1) && ((__ib == 0 || __ib == 1)))
+    {
     
-    cout << "A: " << __ia << " B: " << __ib << " => " <<  "expS: " << __expected_S[__ia][__ib] << " obtS: " << obtained_s.read() << " expC: " << __expected_C[__ia][__ib] << " obtC: " << obtained_c.read();
-    assert(__expected_S[__ia][__ib] == obtained_s.read());
-    assert(__expected_C[__ia][__ib] == obtained_c.read());
+        cout << "check::begin" << __ia << "," << __ib << "\n";
+        
+        cout << "A: " << __ia << " B: " << __ib << " => " <<  "expS: " << __expected_S[__ia][__ib] << " obtS: " << obtained_s.read() << " expC: " << __expected_C[__ia][__ib] << " obtC: " << obtained_c.read();
+        assert(__expected_S[__ia][__ib] == obtained_s.read());
+        assert(__expected_C[__ia][__ib] == obtained_c.read());
+        
+        //__ready = false;
+        //__checked.notify();  
     
-    __ready = false;
-    __checked.notify();  
-    
-    cout << "check::end\n";
+        cout << "check::end\n";
+    }
 }

@@ -23,7 +23,7 @@ SC_MODULE(HalfAdderTestBench)
         
         
         SC_METHOD(check);
-        sensitive << obtained_s << obtained_c; 
+        sensitive << obtained_s << obtained_c;         
     }
 
 
@@ -31,8 +31,8 @@ private:
     void __init();
     
 private:
-    sc_event __checked;
-    bool __ready;
+    // sc_event __checked;
+    // bool __ready;
 
     bool __expected_S[2][2];
     bool __expected_C[2][2];
