@@ -27,7 +27,7 @@ void HalfAdderTestBench::check()
 
     cout << "check::begin\n";
     
-    cout << "A: " << A.read() << " B: " << B.read() << " => " <<  "expS: " << __expected_S[A.read()][B.read()] << " obtS: " << obtained_s.read() << " expC: " << __expected_C[A.read()][B.read()] << " obtC: " << obtained_c.read();
+    cout << "A: " << A.read() << " B: " << B.read() << " => " <<  "expS: " << __expected_S[A.read()][B.read()] << " obtS: " << obtained_s.read() << " expC: " << __expected_C[A.read()][B.read()] << " obtC: " << obtained_c.read() << endl;
     
     assert(__expected_S[A.read()][B.read()] == obtained_s.read());
     assert(__expected_C[A.read()][B.read()] == obtained_c.read());
