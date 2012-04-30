@@ -5,7 +5,7 @@ SC_MODULE(TwoBitCounter)
     sc_in<bool> CLK;
     
     sc_out<bool> S0;
-    sc_out<bool> s1;
+    sc_out<bool> S1;
  
     
     void count();
