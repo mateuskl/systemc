@@ -1,7 +1,11 @@
 #include <two_bit_counter.hh>
 
+#include <iostream>
+
 void TwoBitCounter::count()
 {
+    cout << "TwoBitCounter::count\n";
+    
     switch(__count)
     {
         case 0:
