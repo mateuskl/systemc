@@ -15,5 +15,5 @@ void ClockGenerator::generate()
 
 void ClockGenerator::__swap_clock()
 {
-    __clk = (__clk) ? 0 : 1;
+    __clk = (__clk) ? false : true;
 }

@@ -11,10 +11,13 @@ SC_MODULE(ClockGenerator)
  
     SC_CTOR(ClockGenerator)
     {
+        __clk = false;
         SC_THREAD(generate);
     }
     
 private:
     void __swap_clock();
     
+private:
+    bool __clk;
 };
