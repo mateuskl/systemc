@@ -34,4 +34,9 @@ void HalfAdderTestBench::check()
 
     cout << "check::end\n";
     
+    if (A.read() && B.read())
+    {
+        sc_stop();
+        cout << "tests OK\n";
+    }
 }
