@@ -11,7 +11,7 @@ SC_MODULE(ClockGenerator)
  
     SC_CTOR(ClockGenerator)
     {
-        __clk = false;
+        __clk = true;
         SC_THREAD(generate);
     }
     
