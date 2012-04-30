@@ -1,7 +1,8 @@
 #include <systemc.h>
 
+#include <clock_generator.hh>
+#include <two_bit_counter.hh>
 #include <half_adder.hh>
-
 #include <test_bench.hh>
 
 int sc_main(int argc, char *argv[])
@@ -10,19 +11,28 @@ int sc_main(int argc, char *argv[])
     sc_signal<bool> B;
     sc_signal<bool> S;
     sc_signal<bool> C;
+    sc_signal<bool> CLK;
     
-    HalfAdder ha("Adder");
-    HalfAdderTestBench tb("TestBench");
+    ClockGenerator clock("clock");
+    TwoBitCounter counter("counter");
+    HalfAdder adder("Adder");
+    HalfAdderTestBench testBench("TestBench");
     
-    ha.A(A);
-    ha.B(B);    
-    ha.S(S);
-    ha.C(C);
+    clock.CLK(CLK);
     
-    tb.stimulus_a(A);
-    tb.stimulus_b(B);
-    tb.obtained_s(S);
-    tb.obtained_c(C);
+    counter.CLK(CLK);
+    counter.S0(A);
+    counter.S1(B);
+    
+    adder.A(A);
+    adder.B(B);
+    adder.S(S);
+    adder.C(C);
+    
+    testBench.A(A);
+    testBench.B(B);
+    testBench.obtained_s(S);
+    testBench.obtained_c(C);
     
     sc_start();
     
