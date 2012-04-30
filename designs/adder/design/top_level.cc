@@ -5,6 +5,8 @@
 #include <half_adder.hh>
 #include <test_bench.hh>
 
+#include <iostream>
+
 int sc_main(int argc, char *argv[])
 {
     sc_signal<bool> A;
@@ -35,6 +37,10 @@ int sc_main(int argc, char *argv[])
     testBench.obtained_c(C);
     
     sc_start();
+    
+    // while(true); here this thread sould yield or something
+    
+    std::cout << "bye\n";
     
     return 0;    
 }
