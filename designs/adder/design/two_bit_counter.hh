@@ -3,18 +3,23 @@
 SC_MODULE(TwoBitCounter)
 {
     sc_in<bool> CLK;
+    sc_in<bool> RST;
     
     sc_out<bool> S0;
     sc_out<bool> S1;
  
+    sc_out<bool> RST_O;
     
     void count();
+    
+    void reset();
 
     SC_CTOR(TwoBitCounter)
     {
-        __count = 0;
         SC_METHOD(count);
-        sensitive << CLK;
+        sensitive << CLK.pos();
+        
+        SC_THREAD(reset);
     }
     
 private:    
