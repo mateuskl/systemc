@@ -25,18 +25,22 @@ void HalfAdderTestBench::__init()
 void HalfAdderTestBench::check()
 {
 
-    //cout << "check::begin\n";
+    // cout << "check::begin\n";
     
-    //cout << "A: " << A.read() << " B: " << B.read() << " => " <<  "expS: " << __expected_S[A.read()][B.read()] << " obtS: " << obtained_s.read() << " expC: " << __expected_C[A.read()][B.read()] << " obtC: " << obtained_c.read() << endl;
+    cout << "A: " << A.read() << " B: " << B.read() << " => " <<  "expS: " << __expected_S[A.read()][B.read()] << " obtS: " << obtained_s.read() << " expC: " << __expected_C[A.read()][B.read()] << " obtC: " << obtained_c.read() << endl;
     
-    //assert(__expected_S[A.read()][B.read()] == obtained_s.read());
-    //assert(__expected_C[A.read()][B.read()] == obtained_c.read());
+    sc_assert(__expected_S[A.read()][B.read()] == obtained_s.read());
+    sc_assert(__expected_C[A.read()][B.read()] == obtained_c.read());
 
-    //cout << "check::end\n";
+    // cout << "check::end\n";
     
     if (A.read() && B.read())
     {
+        cout << "tests OK\n";
+        wait(CLK.posedge_event());
+        wait(CLK.posedge_event());
+        wait(CLK.posedge_event());
+
         sc_stop();
-        // cout << "tests OK\n";
     }
 }

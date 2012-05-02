@@ -18,13 +18,10 @@ int sc_main(int argc, char *argv[])
     sc_time clk_period(30, SC_NS);
     sc_clock CLK("clk", clk_period);
     
-    // ClockGenerator clock("clock");
     TwoBitCounter counter("counter");
     HalfAdder adder("Adder");
     HalfAdderTestBench testBench("TestBench");
     
-    //clock.CLK(CLK);
-
     counter.RST(RST);    
     counter.RST_O(RST);
     counter.CLK(CLK);
@@ -36,31 +33,34 @@ int sc_main(int argc, char *argv[])
     adder.S(S);
     adder.C(C);
     
+    testBench.CLK(CLK);
     testBench.A(A);
     testBench.B(B);
     testBench.obtained_s(S);
     testBench.obtained_c(C);
     
     sc_trace_file *trcf = sc_create_vcd_trace_file("trace");
-    if (trcf) {
+    if (trcf) 
+    {
         sc_trace(trcf, A, "A");
         sc_trace(trcf, B, "B");
         sc_trace(trcf, S, "S");
         sc_trace(trcf, C, "C");
         sc_trace(trcf, CLK, "CLK");
         trcf->set_time_unit(-15);
-    } else {
-        std::cout << "Deu pau no trace" << std::endl;
+    } else 
+    {
+        std::cout << "error in trace" << std::endl;
     }
     
     sc_start();
     
-    // while(true); here this thread sould yield or something
-    
     std::cout << "bye\n";
     
-     if (trcf) 
+    if (trcf) 
+    {
         sc_close_vcd_trace_file(trcf);
+    }
     
     return 0;    
 }

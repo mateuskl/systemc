@@ -3,6 +3,8 @@
 SC_MODULE(HalfAdderTestBench)   
 {
     
+    sc_in<bool> CLK;
+    
     sc_in<bool> A;
     sc_in<bool> B;
     sc_in<bool> obtained_s;
@@ -16,7 +18,7 @@ SC_MODULE(HalfAdderTestBench)
         __init();
         
         SC_METHOD(check);
-        sensitive << A << B << obtained_s << obtained_c;         
+        sensitive << CLK;         
     }
 
 
