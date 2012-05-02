@@ -36,11 +36,7 @@ void HalfAdderTestBench::check()
     
     if (A.read() && B.read())
     {
-        cout << "tests OK\n";
-        wait(CLK.posedge_event());
-        wait(CLK.posedge_event());
-        wait(CLK.posedge_event());
-
+        cout << "tests OK\n";       
         sc_stop();
     }
 }
