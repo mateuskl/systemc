@@ -12,7 +12,6 @@ all: half_adder_target
 CC_FILES := $(shell find . -name "*.cc" -type f)
 OBJECTS := $(subst .cc,.o,$(CC_FILES))
 
-
 SYSTEMC_PATH := /usr/local/local_programs/systemc/systemc-2.2.0
 
 INC := -I. -I$(SYSTEMC_PATH)/include
@@ -20,6 +19,18 @@ LIBDIR := -L$(SYSTEMC_PATH)/lib-$(TARGET_ARCH)
 
 LIBS   :=  -lsystemc -lm
 
+
+# Related to scoot -------------------------------------------------------------
+SRC := $(CC_FILES)
+
+INCLUDE := $(INC)
+
+SCOOT_OPT = -D SCOOT_SKIP_NOTIFICATION_PHASES
+
+include /usr/local/local_programs/scoot/common.mk
+
+
+# ------------------------------------------------------------------------------
 
 half_adder_target: $(OBJECTS) $(SYSTEMC_PATH)/lib-$(TARGET_ARCH)/libsystemc.a
 	$(CXX) $(OBJECTS) $(LIBS) $(LIBDIR) -o $(DESIGN)
