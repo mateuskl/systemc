@@ -41,6 +41,6 @@ half_adder_target: $(OBJECTS) $(SYSTEMC_PATH)/lib-$(TARGET_ARCH)/libsystemc.a
 	$(CXX) $(INC) -Werror -c -o $@ $<
 
 
-clean:
-	rm -f $(OBJECTS) *~
+cleandesign:
+	rm -f $(OBJECTS) *~ $(DESIGN)
 
