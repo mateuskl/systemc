@@ -1,6 +1,5 @@
 #include <systemc.h>
 
-#include <clock_generator.hh>
 #include <two_bit_counter.hh>
 #include <half_adder.hh>
 #include <test_bench.hh>
