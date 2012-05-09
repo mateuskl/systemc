@@ -29,14 +29,14 @@ void HalfAdderTestBench::check()
     
     cout << "A: " << A.read() << " B: " << B.read() << " => " <<  "expS: " << __expected_S[A.read()][B.read()] << " obtS: " << obtained_s.read() << " expC: " << __expected_C[A.read()][B.read()] << " obtC: " << obtained_c.read() << endl;
     
-    sc_assert(__expected_S[A.read()][B.read()] == obtained_s.read());
-    sc_assert(__expected_C[A.read()][B.read()] == obtained_c.read());
+    assert(__expected_S[A.read()][B.read()] == obtained_s.read());
+    assert(__expected_C[A.read()][B.read()] == obtained_c.read());
 
     // cout << "check::end\n";
     
     if (A.read() && B.read())
     {
         cout << "tests OK\n";       
-        sc_stop();
+        // sc_stop(); // commented because of Scoot.
     }
 }

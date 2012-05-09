@@ -15,7 +15,7 @@ int sc_main(int argc, char *argv[])
     sc_signal<bool> RST;
     
     sc_time clk_period(30, SC_NS);
-    sc_clock CLK("clk", clk_period);
+    sc_clock CLK("clk");
     
     TwoBitCounter counter("counter");
     HalfAdder adder("Adder");
@@ -38,6 +38,7 @@ int sc_main(int argc, char *argv[])
     testBench.obtained_s(S);
     testBench.obtained_c(C);
     
+    /*
     sc_trace_file *trcf = sc_create_vcd_trace_file("trace");
     if (trcf) 
     {
@@ -51,15 +52,18 @@ int sc_main(int argc, char *argv[])
     {
         std::cout << "error in trace" << std::endl;
     }
+    */ 
     
-    sc_start();
+    sc_start(0);
     
     std::cout << "bye\n";
     
+    /*
     if (trcf) 
     {
         sc_close_vcd_trace_file(trcf);
     }
+    */
     
     return 0;    
 }
