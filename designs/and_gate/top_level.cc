@@ -30,7 +30,7 @@ int sc_main(int argc, char *argv[])
     }
 #endif
     
-    sc_start();
+    sc_start(0);
     
 
 #if TRACE    
