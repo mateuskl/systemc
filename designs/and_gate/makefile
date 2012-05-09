@@ -40,6 +40,10 @@ INCLUDES_FOR_CBMC := /usr/local/local_programs/scoot/include/bv
 check:
 	cbmc $(SCOOT_OUT) --bounds-check --pointer-check -I $(INCLUDES_FOR_CBMC) -I /usr/local/local_programs/scoot/include/stl -I /usr/local/local_programs/scoot/include/systemc -I /usr/local/local_programs/scoot/include/tlm -I /usr/local/local_programs/scoot/include
 
+check2:
+	cbmc scoot_exhaustive_out-cbmc.cpp --bounds-check --pointer-check -I $(INCLUDES_FOR_CBMC) -I /usr/local/local_programs/scoot/include/stl -I /usr/local/local_programs/scoot/include/systemc -I /usr/local/local_programs/scoot/include/tlm -I /usr/local/local_programs/scoot/include
+
+
 
 # ------------------------------------------------------------------------------
 
