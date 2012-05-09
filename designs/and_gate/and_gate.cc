@@ -1,4 +1,4 @@
-#include <and_gate.hh>
+#include "and_gate.hh"
 
 void AndGate::compute()
 {
