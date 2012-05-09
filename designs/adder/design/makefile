@@ -32,6 +32,20 @@ include /usr/local/local_programs/scoot/common.mk
 
 # ------------------------------------------------------------------------------
 
+
+# Related to CBMC --------------------------------------------------------------
+SCOOT_OUT := scoot_out.cpp
+
+check:
+	cbmc $(SCOOT_OUT) --bounds-check --pointer-check
+
+claim:
+	cbmc $(SCOOT_OUT) --show-claims --bounds-check --pointer-check
+
+
+
+# ------------------------------------------------------------------------------
+
 half_adder_target: $(OBJECTS) $(SYSTEMC_PATH)/lib-$(TARGET_ARCH)/libsystemc.a
 	$(CXX) $(OBJECTS) $(LIBS) $(LIBDIR) -o $(DESIGN)
 
