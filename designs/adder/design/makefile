@@ -35,13 +35,10 @@ include /usr/local/local_programs/scoot/common.mk
 
 # Related to CBMC --------------------------------------------------------------
 SCOOT_OUT := scoot_out.cpp
+INCLUDES_FOR_CBMC := /usr/local/local_programs/scoot/include/bv
 
 check:
-	cbmc $(SCOOT_OUT) --bounds-check --pointer-check
-
-claim:
-	cbmc $(SCOOT_OUT) --show-claims --bounds-check --pointer-check
-
+	cbmc $(SCOOT_OUT) --bounds-check --pointer-check -I $(INCLUDES_FOR_CBMC) -I /usr/local/local_programs/scoot/include/stl -I /usr/local/local_programs/scoot/include/systemc -I /usr/local/local_programs/scoot/include/tlm -I /usr/local/local_programs/scoot/include
 
 
 # ------------------------------------------------------------------------------
