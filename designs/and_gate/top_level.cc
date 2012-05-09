@@ -2,7 +2,7 @@
 
 #include "and_gate.hh"
 
-#define TRACE 1
+#define TRACE 0
 
 int sc_main(int argc, char *argv[])
 {
