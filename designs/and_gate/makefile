@@ -1,9 +1,9 @@
-DESIGN := half_adder.elf
+DESIGN := and.elf
 
 CXX := g++
 TARGET_ARCH := linux
 
-all: half_adder_target
+all: main_target
 	
 
 .SUFFIXES: .o .cc
@@ -32,7 +32,18 @@ include /usr/local/local_programs/scoot/common.mk
 
 # ------------------------------------------------------------------------------
 
-half_adder_target: $(OBJECTS) $(SYSTEMC_PATH)/lib-$(TARGET_ARCH)/libsystemc.a
+
+# Related to CBMC --------------------------------------------------------------
+SCOOT_OUT := scoot_out.cpp
+INCLUDES_FOR_CBMC := /usr/local/local_programs/scoot/include/bv
+
+check:
+	cbmc $(SCOOT_OUT) --bounds-check --pointer-check -I $(INCLUDES_FOR_CBMC) -I /usr/local/local_programs/scoot/include/stl -I /usr/local/local_programs/scoot/include/systemc -I /usr/local/local_programs/scoot/include/tlm -I /usr/local/local_programs/scoot/include
+
+
+# ------------------------------------------------------------------------------
+
+main_target: $(OBJECTS) $(SYSTEMC_PATH)/lib-$(TARGET_ARCH)/libsystemc.a
 	$(CXX) $(OBJECTS) $(LIBS) $(LIBDIR) -o $(DESIGN)
 
 
