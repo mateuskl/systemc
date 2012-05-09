@@ -1,6 +1,6 @@
 #include <systemc.h>
 
-#include <and_gate.hh>
+#include "and_gate.hh"
 
 #define TRACE 1
 
