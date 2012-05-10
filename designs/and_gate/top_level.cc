@@ -8,9 +8,8 @@
 
 SC_MODULE(TopLevelAndGateSimulation)
 {
-    int iter;
+    int iter;    
     
-    sc_time clk_period;    
     sc_clock clock;    
     
     AndGate andgate;
@@ -55,8 +54,7 @@ SC_MODULE(TopLevelAndGateSimulation)
     SC_CTOR(TopLevelAndGateSimulation) :
         clock("clock"),
         andgate("Adder"),
-        iter(0),
-        clk_period(30, SC_NS)
+        iter(0)        
     {
         
         andgate.A(A);
