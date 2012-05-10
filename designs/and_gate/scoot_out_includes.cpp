@@ -4,11 +4,879 @@
 #define CPROVER_INFINITY 1
 #endif
 
-#include <__bv.h>
-#include <__nondet.h>
-#include <__print.h>
-#include <__schedule.h>
+#define __INLINE inline // from __bv.h
+
+// contents of __signedbv.h
+/*******************************************************************\
+ *
+ *
+ * Author: Blanc Nicolas
+ *
+ * 
+\*******************************************************************/
+
+
+#ifndef __SIGNEDBV_H
+#define __SIGNEDBV_H
+
+#include <limits.h>
+#include <assert.h>
 #include <iostream>
+#include <stdio.h>
+#include <string.h>
+
+#define SIGNEDBV_SIZEOF_DATA(x)   (sizeof(x)/sizeof(int))
+
+
+static const unsigned INT_BSIZE = sizeof(int)*8;
+static const unsigned LONG_LONG_INT_BSIZE = sizeof(long long int)*8;
+
+template <int W>
+struct __unsignedbv;
+
+template <int W>
+struct __signedbv;
+
+template<int W>
+std::ostream& operator << ( std::ostream& os, const __signedbv<W>& bv);
+
+template <int W>
+struct __signedbv
+{
+  // For storing bits in little endian mode
+  int data[((W-1)/INT_BSIZE)+1];
+
+  // Default construcor
+  __signedbv(){};
+
+  // Copy constructor
+  __signedbv(const __signedbv<W>& bv)
+  {
+    memcpy(data,bv.data,sizeof(data));
+  }
+
+  // Constructor for integer type
+  __signedbv(int v)
+  {
+    data[0] = v;
+
+    if((W%INT_BSIZE) != 0)
+    {
+      data[0] <<=  INT_BSIZE  -  (W%INT_BSIZE);
+      data[0] >>=  INT_BSIZE  -  (W%INT_BSIZE);
+    }
+
+    if(data[0] < 0)
+    {
+      for(unsigned i = 1; i < SIGNEDBV_SIZEOF_DATA(data); i++)
+        data_at(i) = -1;
+    }
+    else
+    {
+      for(unsigned i = 1; i < SIGNEDBV_SIZEOF_DATA(data); i++)
+        data_at(i) = 0;
+    }
+
+#ifdef __BV_DEBUG
+    bool most_significant_bit = (*this)[W-1];
+    assert(  (most_significant_bit == true && data_at(SIGNEDBV_SIZEOF_DATA(data)-1) < 0) ||
+        (most_significant_bit == false && data_at(SIGNEDBV_SIZEOF_DATA(data)-1) >= 0));
+#endif
+  }
+
+  // Conversion constructor for type signedbv
+  template <int W2>
+    explicit __signedbv(const __signedbv<W2>& bv);
+
+  // Conversion constructor for type unsignedbv
+  template <int W2>
+    explicit __signedbv(const __unsignedbv<W2>& bv);
+
+  // Constructor reading a string that represents
+  // an integer in binary format
+  explicit __signedbv(const char binstr [W+1])
+  {
+
+    /*******************/
+#ifdef __BV_DEBUG
+    assert(binstr[W] == '\0');
+#endif
+
+    int index = W-1;
+    for(unsigned j = 0; j < W/INT_BSIZE; j++)
+    {
+      unsigned acc = 0;
+      for(unsigned i = 0; i < INT_BSIZE; i++)
+      {
+        acc >>= 1;
+        acc += (binstr[index] == '0' ? 0: 1) << 31;
+        index--;
+      }
+      data_at(j)=acc;
+    }
+
+    if(W%INT_BSIZE != 0)
+    {
+      int acc = 0;
+      for(; index >= 0; index--)
+      {
+        acc >>=1;
+        acc += (binstr[index] == '0' ? 0: 1) << 31;
+      }
+      acc >>= INT_BSIZE-(W%INT_BSIZE);
+      data_at(SIGNEDBV_SIZEOF_DATA(data)-1) = acc;
+    }
+
+
+#ifdef __BV_DEBUG
+    bool most_significant_bit = (*this)[W-1];
+    assert(  (most_significant_bit == true && data_at(SIGNEDBV_SIZEOF_DATA(data)-1) < 0) ||
+        (most_significant_bit == false && data_at(SIGNEDBV_SIZEOF_DATA(data)-1) >= 0));
+#endif
+  }
+
+  // Bit-extraction constructor
+
+  template<int W2>
+    __signedbv(const __signedbv<W2>& bv, int left, int right);
+
+  // Assignment operator
+
+  __signedbv& operator=(const __signedbv<W>& bv)
+  {
+    for(unsigned i = 0; i < SIGNEDBV_SIZEOF_DATA(data); i++)
+      this->data_at(i) = bv.data_at(i);
+    return *this;
+  }
+
+  // Logical assignment operators
+
+  __signedbv& operator&=(const __signedbv<W>& bv)
+  {
+    for(unsigned i = 0; i < SIGNEDBV_SIZEOF_DATA(data); i++)
+      this->data_at(i) &= bv.data_at(i);
+    return *this;
+  }
+
+  __signedbv& operator|=(const __signedbv<W>& bv)
+  {
+    for(unsigned i = 0; i < SIGNEDBV_SIZEOF_DATA(data); i++)
+      this->data_at(i) |= bv.data_at(i);
+    return *this;
+  }
+
+  __signedbv& operator^=(const __signedbv<W>& bv)
+  {
+    for(unsigned i = 0; i < SIGNEDBV_SIZEOF_DATA(data); i++)
+      this->data_at(i) ^= bv.data_at(i);
+    return *this;
+  }
+
+  __signedbv operator ~ () const
+  {
+    __signedbv tmp;
+
+    for(unsigned i = 0; i < SIGNEDBV_SIZEOF_DATA(data) ; i++)
+      tmp.data_at(i) = ~(this->data_at(i));
+    return  tmp;
+  }
+
+  // Arithemtic assignment operators
+
+  __signedbv& operator +=(const __signedbv&);
+  __signedbv& operator -=(const __signedbv&);
+  __signedbv& operator *=(const __signedbv&);
+  __signedbv& operator /=(const __signedbv&);
+  __signedbv& operator %=(const __signedbv&);
+
+  // Shift assignment operators
+
+  __signedbv&  operator <<= (int i);
+  __signedbv&  operator >>= (int i);
+
+  // Conversion functions
+
+  bool to_bool() const
+  {
+    for(unsigned i = 0; i < SIGNEDBV_SIZEOF_DATA(data) ; i++)
+      if(this->data_at(i))
+        return true;
+    return false;
+  }
+
+  int to_int() const
+  {
+    return data[0];
+  }
+
+  // Bit extraction
+
+  bool operator[](int i) const
+  {
+#ifdef __BV_DEBUG
+    assert(i < W);
+#endif
+
+    int x = i/INT_BSIZE;
+    int y = i%INT_BSIZE;
+    int mask = 1 << y;
+    return (this->data[x] & mask);
+  }
+
+  int& data_at(unsigned v)
+  {
+#ifdef __BV_DEBUG
+    assert( 0 <= v && v < (W/INT_BSIZE)+1);
+#endif
+    return data[v];
+  }
+
+  const int& data_at(unsigned v) const
+  {
+#ifdef __BV_DEBUG
+    assert( 0 <= v && v < (W/INT_BSIZE)+1);
+#endif
+    return data[v];
+  }
+
+};
+
+// Conversion constructor for type signedbv
+
+template<int W> template<int W2>
+  __INLINE
+__signedbv<W>::__signedbv(const __signedbv<W2>& bv)
+{
+  if(W < W2)
+  {
+    for(int i = 0; i < SIGNEDBV_SIZEOF_DATA(data); i++)
+      data_at(i) = bv.data_at(i);
+  }
+  else
+  {
+    for(int i = 0; i < SIGNEDBV_SIZEOF_DATA(bv.data); i++)
+      data_at(i) = bv.data_at(i);
+
+    // do sign exetension
+    if(bv.data_at(SIGNEDBV_SIZEOF_DATA(bv.data)-1) < 0)
+    {
+      for(int i = SIGNEDBV_SIZEOF_DATA(bv.data); i < SIGNEDBV_SIZEOF_DATA(data); i++)
+        data_at(i) = UINT_MAX;
+    }
+    else
+    {
+      for(int i = SIGNEDBV_SIZEOF_DATA(bv.data); i < SIGNEDBV_SIZEOF_DATA(data); i++)
+        data_at(i) = 0;
+    }
+  }
+#ifdef __BV_DEBUG
+  bool most_significant_bit = (*this)[W-1];
+  assert(  (most_significant_bit == true && data_at(SIGNEDBV_SIZEOF_DATA(data)-1) < 0) ||
+      (most_significant_bit == false && data_at(SIGNEDBV_SIZEOF_DATA(data)-1) >= 0));
+#endif
+}
+
+// Bit-extraction constructor
+
+template<int W> template<int W2>
+  __INLINE
+__signedbv<W>::__signedbv(const __signedbv<W2>& bv, int left, int right)
+{
+#ifdef __BV_DEBUG
+  assert( W == left - right + 1 && W2 > left && left > right && right >= 0 );
+#endif
+
+  // optimized case
+  if( left/INT_BSIZE == right/INT_BSIZE)
+  {
+    data_at(0) = bv.data_at(right/INT_BSIZE);
+    data_at(0) <<= INT_BSIZE -1 - (left%INT_BSIZE);
+    data_at(0) >>= (INT_BSIZE -1 - (left%INT_BSIZE)) + (right%INT_BSIZE);
+  }
+  else
+  {
+    __signedbv<W2> tmp(bv);
+    tmp <<= W2-1-left;
+    tmp >>= (W2-1-left) + right;
+    *this = (__signedbv<W>)tmp;
+  }
+}
+
+
+// Comparison operators
+
+template<int W>
+  __INLINE
+bool operator==(const __signedbv<W>& bv1, const __signedbv<W>& bv2)
+{
+  for(unsigned i = 0; i < SIGNEDBV_SIZEOF_DATA(bv1.data) ; i++)
+  {
+    if ( bv1.data_at(i) != bv2.data_at(i))return false;
+  }
+  return true;
+}
+
+template<int W>
+  __INLINE
+bool operator !=(const __signedbv<W>& bv1, const __signedbv<W>& bv2)
+{
+  return !(bv1 == bv2);
+}
+
+template<int W>
+bool operator < (const __signedbv<W>& bv1, const __signedbv<W>& bv2);
+
+#ifdef __LITTLE_ENDIAN__
+template<>
+  __INLINE
+bool operator < <8> (const __signedbv<8>& bv1, const __signedbv<8>& bv2)
+{
+  return (*((char*)(bv1.data))) < (*((char*)(bv2.data)));
+}
+#endif
+
+
+
+template<>
+  __INLINE
+bool operator < <INT_BSIZE> (const __signedbv<INT_BSIZE>& bv1, const __signedbv<INT_BSIZE>& bv2)
+{
+  return bv1.data[0] < bv2.data[0];
+}
+
+template<int W>
+  __INLINE
+bool operator > (const __signedbv<W>& bv1, const __signedbv<W>& bv2)
+{
+  return bv2 < bv1;
+}
+
+template<int W>
+  __INLINE
+bool operator <= (const __signedbv<W>& bv1, const __signedbv<W>& bv2)
+{
+  return !( bv1 > bv2);
+}
+
+template<int W>
+  __INLINE
+bool operator >= (const __signedbv<W>& bv1, const __signedbv<W>& bv2)
+{
+  return !( bv1 < bv2);
+}
+
+
+#ifdef __LITTLE_ENDIAN__
+#if (__SIZEOF_LONG_LONG__  == 2 * __SIZEOF_INT__)
+template<>
+  __INLINE
+bool operator==(const __signedbv<LONG_LONG_INT_BSIZE>& bv1, const __signedbv<LONG_LONG_INT_BSIZE>& bv2)
+{
+  return (*(long long int*)bv1.data) == (*(long long int*)bv2.data);
+}
+
+  template<>
+bool operator < (const __signedbv<LONG_LONG_INT_BSIZE>& bv1, const __signedbv<LONG_LONG_INT_BSIZE>& bv2)
+{
+  return (*(long long int*)bv1.data) < (*(long long int*)bv2.data);
+}
+
+#endif // __LITTLE_ENDIAN__
+#endif // (__SIZEOF_LONG_LONG__  == 2 * __SIZEOF_INT__
+
+// logical operators
+
+template<int W>
+  __INLINE
+__signedbv<W> operator & (const __signedbv<W>& bv1, const __signedbv<W>& bv2)
+{
+  __signedbv<W> tmp(bv1);
+  tmp &= bv2;
+  return  tmp;
+}
+
+template<int W>
+  __INLINE
+__signedbv<W> operator | (const __signedbv<W>& bv1, const __signedbv<W>& bv2)
+{
+  __signedbv<W> tmp(bv1);
+  tmp |= bv2;
+  return  tmp;
+}
+
+template<int W>
+  __INLINE
+__signedbv<W> operator ^ (const __signedbv<W>& bv1, const __signedbv<W>& bv2)
+{
+  __signedbv<W> tmp(bv1);
+  tmp ^= bv2;
+  return  tmp;
+}
+
+
+// arithmetic operators
+
+template<int W>
+  __INLINE
+__signedbv<W>& __signedbv<W>::operator +=(const __signedbv<W>& bv)
+{
+
+  unsigned carry = 0;
+  for(unsigned i = 0; i < SIGNEDBV_SIZEOF_DATA(data)-1 ; i++)
+  {
+    unsigned add_lw = carry + ((unsigned)data_at(i) >> 1) + ((unsigned)bv.data_at(i) >> 1);
+    unsigned add_up = ((unsigned)data_at(i) >> (INT_BSIZE-1)) + ((unsigned)bv.data_at(i) >> (INT_BSIZE-1));
+    data_at(i) += add_up;
+    carry = add_up >> 1;  
+#ifdef __BV_DEBUG
+    assert(add_up < 4);
+#endif
+  }
+
+  data_at(SIGNEDBV_SIZEOF_DATA(data)-1) += bv.data_at(SIGNEDBV_SIZEOF_DATA(data)-1);
+
+  if(W%INT_BSIZE !=0)
+  {
+    data_at(SIGNEDBV_SIZEOF_DATA(data)-1) <<= INT_BSIZE-W%INT_BSIZE;
+    data_at(SIGNEDBV_SIZEOF_DATA(data)-1) >>= INT_BSIZE-W%INT_BSIZE;
+  }
+}
+
+
+#ifdef __LITTLE_ENDIAN__
+template<>
+  __INLINE
+__signedbv<8>& __signedbv<8>::operator +=(const __signedbv<8>& bv)
+{
+  char c = *((char*)data) + *((char*)bv.data);
+  data[0] = c;
+  return *this;
+}
+#endif
+
+#ifdef __LITTLE_ENDIAN__
+template<>
+  __INLINE
+__signedbv<8>& __signedbv<8>::operator -=(const __signedbv<8>& bv)
+{
+  char c = *((char*)data) - *((char*)bv.data);
+  data[0] = c;
+
+  return *this;
+}
+#endif
+
+#ifdef __LITTLE_ENDIAN__
+template<>
+  __INLINE
+__signedbv<8>& __signedbv<8>::operator *=(const __signedbv<8>& bv)
+{
+  char c = (*((char*)data)) *  (*((char*)bv.data));
+  data[0] = c;
+  return *this;
+}
+#endif
+
+
+#ifdef __LITTLE_ENDIAN__
+template<>
+  __INLINE
+__signedbv<8>& __signedbv<8>::operator /=(const __signedbv<8>& bv)
+{
+  char c = (*((char*)data)) /  (*((char*)bv.data));
+  data[0] = c;
+  return *this;
+}
+#endif
+
+#ifdef __LITTLE_ENDIAN__
+template<>
+  __INLINE
+__signedbv<8>& __signedbv<8>::operator %=(const __signedbv<8>& bv)
+{
+  char c = (*((char*)data)) %  (*((char*)bv.data));
+  data[0] = c;
+  return *this;
+}
+#endif
+
+template<>
+  __INLINE
+__signedbv<INT_BSIZE>& __signedbv<INT_BSIZE>::operator +=(const __signedbv<INT_BSIZE>& bv)
+{
+  data[0] += bv.data[0];
+  return *this;
+}
+
+template<>
+  __INLINE
+__signedbv<INT_BSIZE>& __signedbv<INT_BSIZE>::operator -=(const __signedbv<INT_BSIZE>& bv)
+{
+  data[0] -= bv.data[0];
+  return *this;
+}
+
+template<>
+  __INLINE
+__signedbv<INT_BSIZE>& __signedbv<INT_BSIZE>::operator *=(const __signedbv<INT_BSIZE>& bv)
+{
+  data[0] *= bv.data[0];
+  return *this;
+}
+
+template<>
+  __INLINE
+__signedbv<INT_BSIZE>& __signedbv<INT_BSIZE>::operator /=(const __signedbv<INT_BSIZE>& bv)
+{
+  data[0] /= bv.data[0];
+  return *this;
+}
+
+template<>
+  __INLINE
+__signedbv<INT_BSIZE>& __signedbv<INT_BSIZE>::operator %=(const __signedbv<INT_BSIZE>& bv)
+{
+  data[0] %= bv.data[0];
+  return *this;
+}
+
+#ifdef __LITTLE_ENDIAN__
+#if (__SIZEOF_LONG_LONG__  == 2 * __SIZEOF_INT__)
+
+template<>
+  __INLINE
+__signedbv<LONG_LONG_INT_BSIZE>& __signedbv<LONG_LONG_INT_BSIZE>::operator +=(const __signedbv<LONG_LONG_INT_BSIZE>& bv)
+{
+  *(long long int*)data += *(long long int*)bv.data;
+  return *this;
+}
+
+template<>
+  __INLINE
+__signedbv<LONG_LONG_INT_BSIZE>& __signedbv<LONG_LONG_INT_BSIZE>::operator -=(const __signedbv<LONG_LONG_INT_BSIZE>& bv)
+{
+  *(long long int*)data -= *(long long int*)bv.data;
+  return *this;
+}
+
+template<>
+  __INLINE
+__signedbv<LONG_LONG_INT_BSIZE>& __signedbv<LONG_LONG_INT_BSIZE>::operator *=(const __signedbv<LONG_LONG_INT_BSIZE>& bv)
+{
+  *(long long int*)data *= *(long long int*)bv.data;
+  return *this;
+}
+
+template<>
+  __INLINE
+__signedbv<LONG_LONG_INT_BSIZE>& __signedbv<LONG_LONG_INT_BSIZE>::operator /=(const __signedbv<LONG_LONG_INT_BSIZE>& bv)
+{
+  *(long long int*)data /= *(long long int*)bv.data;
+  return *this;
+}
+
+template<>
+  __INLINE
+__signedbv<LONG_LONG_INT_BSIZE>& __signedbv<LONG_LONG_INT_BSIZE>::operator %=(const __signedbv<LONG_LONG_INT_BSIZE>& bv)
+{
+  *(long long int*)data %= *(long long int*)bv.data;
+  return *this;
+}
+
+#endif  // (__SIZEOF_LONG_LONG__  == 2 * __SIZEOF_INT__)
+#endif  // __LITTLE_ENDIAN__
+
+#ifdef __BIG_ENDIAN__
+#if (__SIZEOF_LONG_LONG__  == 2 * __SIZEOF_INT__)
+template<>
+  __INLINE
+__signedbv<LONG_LONG_INT_BSIZE>& __signedbv<LONG_LONG_INT_BSIZE>::operator +=(const __signedbv<LONG_LONG_INT_BSIZE>& bv)
+{
+  long long int tmp1 = (long long unsigned) data[0] | ((long long unsigned) data[1] << (LONG_LONG_INT_BSIZE/2));
+  long long int tmp2 = (long long unsigned) bv.data[0] | ((long long unsigned) bv.data[1] << (LONG_LONG_INT_BSIZE/2));
+  long long unsigned tmp3 = tmp1 + tmp2;
+  data[1] = tmp3 >> (LONG_LONG_INT_BSIZE/2);
+  data[0] = (tmp3 <<  (LONG_LONG_INT_BSIZE/2)) >> (LONG_LONG_INT_BSIZE/2);
+  return *this;
+}
+
+template<>
+  __INLINE
+__signedbv<LONG_LONG_INT_BSIZE>& __signedbv<LONG_LONG_INT_BSIZE>::operator -=(const __signedbv<LONG_LONG_INT_BSIZE>& bv)
+{
+  long long int tmp1 = (long long unsigned) data[0] | ((long long unsigned) data[1] << (LONG_LONG_INT_BSIZE/2));
+  long long int tmp2 = (long long unsigned) bv.data[0] | ((long long unsigned) bv.data[1] << (LONG_LONG_INT_BSIZE/2));
+  long long unsigned tmp3 = tmp1 - tmp2;
+  data[1] = tmp3 >> (LONG_LONG_INT_BSIZE/2);
+  data[0] = (tmp3 <<  (LONG_LONG_INT_BSIZE/2)) >> (LONG_LONG_INT_BSIZE/2);
+  return *this;
+}
+
+template<>
+  __INLINE
+__signedbv<LONG_LONG_INT_BSIZE>& __signedbv<LONG_LONG_INT_BSIZE>::operator *=(const __signedbv<LONG_LONG_INT_BSIZE>& bv)
+{
+  long long int tmp1 = (long long unsigned) data[0] | ((long long unsigned) data[1] << (LONG_LONG_INT_BSIZE/2));
+  long long int tmp2 = (long long unsigned) bv.data[0] | ((long long unsigned) bv.data[1] << (LONG_LONG_INT_BSIZE/2));
+  long long unsigned tmp3 = tmp1 * tmp2;
+  data[1] = tmp3 >> (LONG_LONG_INT_BSIZE/2);
+  data[0] = (tmp3 <<  (LONG_LONG_INT_BSIZE/2)) >> (LONG_LONG_INT_BSIZE/2);
+  return *this;
+}
+
+template<>
+  __INLINE
+__signedbv<LONG_LONG_INT_BSIZE>& __signedbv<LONG_LONG_INT_BSIZE>::operator /=(const __signedbv<LONG_LONG_INT_BSIZE>& bv)
+{
+  long long int tmp1 = (long long unsigned) data[0] | ((long long unsigned) data[1] << (LONG_LONG_INT_BSIZE/2));
+  long long int tmp2 = (long long unsigned) bv.data[0] | ((long long unsigned) bv.data[1] << (LONG_LONG_INT_BSIZE/2));
+  long long unsigned tmp3 = tmp1/tmp2;
+  data[1] = tmp3 >> (LONG_LONG_INT_BSIZE/2);
+  data[0] = (tmp3 <<  (LONG_LONG_INT_BSIZE/2)) >> (LONG_LONG_INT_BSIZE/2);
+  return *this;
+}
+
+template<>
+  __INLINE
+__signedbv<LONG_LONG_INT_BSIZE>& __signedbv<LONG_LONG_INT_BSIZE>::operator %=(const __signedbv<LONG_LONG_INT_BSIZE>& bv)
+{
+  long long int tmp1 = (long long unsigned) data[0] | ((long long unsigned) data[1] << (LONG_LONG_INT_BSIZE/2));
+  long long int tmp2 = (long long unsigned) bv.data[0] | ((long long unsigned) bv.data[1] << (LONG_LONG_INT_BSIZE/2));
+  long long unsigned tmp3 = tmp1 % tmp2;
+  data[1] = tmp3 >> (LONG_LONG_INT_BSIZE/2);
+  data[0] = (tmp3 <<  (LONG_LONG_INT_BSIZE/2)) >> (LONG_LONG_INT_BSIZE/2);
+  return *this;
+}
+#endif  // (__SIZEOF_LONG_LONG__  == 2 * __SIZEOF_INT__)
+#endif  // __BIG_ENDIAN__
+
+
+
+
+template<int W>
+  __INLINE
+__signedbv<W> operator +(const __signedbv<W>& bv1, const __signedbv<W>& bv2)
+{
+  __signedbv<W> tmp(bv1);
+  tmp += bv2;
+  return  tmp;
+}
+
+
+template<int W, class T>
+  __INLINE
+T*  operator + (const __signedbv<W>& bv1, T* t)
+{
+  return  t + bv1.to_int();
+}
+
+
+template<int W, class T>
+  __INLINE
+T*  operator + ( T* t, const __signedbv<W>& bv1)
+{
+  return  t + bv1.to_int();
+}
+
+
+template<int W>
+  __INLINE
+__signedbv<W> operator -(const __signedbv<W>& bv1, const __signedbv<W>& bv2)
+{
+  __signedbv<W> tmp(bv1);
+  tmp -= bv2;
+  return  tmp;
+}
+
+template<int W>
+  __INLINE
+__signedbv<W> operator *(const __signedbv<W>& bv1, const __signedbv<W>& bv2)
+{
+  __signedbv<W> tmp(bv1);
+  tmp *= bv2;
+  return  tmp;
+}
+
+template<int W>
+  __INLINE
+__signedbv<W> operator /(const __signedbv<W>& bv1, const __signedbv<W>& bv2)
+{
+  __signedbv<W> tmp(bv1);
+  tmp /= bv2;
+  return  tmp;
+}
+
+template<int W>
+  __INLINE
+__signedbv<W> operator %(const __signedbv<W>& bv1, const __signedbv<W>& bv2)
+{
+  __signedbv<W> tmp(bv1);
+  tmp %= bv2;
+  return  tmp;
+}
+
+// Shift assignment operators
+
+template<>
+  __INLINE
+__signedbv<8>&  __signedbv<8>::operator <<= (int i)
+{
+  data[0] <<= i + INT_BSIZE-8;
+  data[0] >>= INT_BSIZE-8;
+  return *this;
+}
+
+template<>
+  __INLINE
+__signedbv<INT_BSIZE>&  __signedbv<INT_BSIZE>::operator <<= (int i)
+{
+  data[0] <<= i;
+  return *this;
+}
+
+
+template<int W>
+  __INLINE
+__signedbv<W>& __signedbv<W>::operator <<= (int shift)
+{
+
+  for(int j = 0; j < shift/INT_BSIZE; j++)
+  {
+    for(int i = SIGNEDBV_SIZEOF_DATA(data)-1 ; i > 0 ; i--)
+    {
+      data_at(i) = data_at(i-1);
+    }
+    data_at(0) = 0;
+  }
+
+  int small_shift = shift%INT_BSIZE;
+  if(shift%INT_BSIZE != 0)
+  {
+    for(int i = SIGNEDBV_SIZEOF_DATA(data)-1 ; i > 0 ; i--)
+    {
+      data_at(i) <<= small_shift;
+      data_at(i) += ((unsigned)data_at(i-1)) >> (INT_BSIZE - small_shift);
+
+    }
+    data_at(0) <<= shift%INT_BSIZE;
+  }
+
+  if(W%INT_BSIZE !=0)
+  {
+    data_at(SIGNEDBV_SIZEOF_DATA(data)-1) <<= INT_BSIZE-W%INT_BSIZE;
+    data_at(SIGNEDBV_SIZEOF_DATA(data)-1) >>= INT_BSIZE-W%INT_BSIZE;
+  }
+
+#ifdef __BV_DEBUG
+  bool most_significant_bit = (*this)[W-1];
+  assert(  (most_significant_bit == true && data_at(SIGNEDBV_SIZEOF_DATA(data)-1) < 0) ||
+      (most_significant_bit == false && data_at(SIGNEDBV_SIZEOF_DATA(data)-1) >= 0));
+#endif
+
+  return *this;
+}
+
+
+template<>
+  __INLINE
+__signedbv<8>&  __signedbv<8>::operator >>= (int i)
+{
+  data[0] >>= i;
+  return *this;
+}
+
+template<>
+  __INLINE
+__signedbv<INT_BSIZE>&  __signedbv<INT_BSIZE>::operator >>= (int i)
+{
+  data[0] >>= i;
+  return *this;
+}
+
+
+
+template<int W>
+  __INLINE
+__signedbv<W>& __signedbv<W>::operator >>= (int shift)
+{
+  for(int j = 0; j < shift/INT_BSIZE; j++)
+  {
+    for(int i = 0; i < SIGNEDBV_SIZEOF_DATA(data)-1; i++)
+    {
+      data_at(i) = data_at(i+1);
+    }
+    data_at(SIGNEDBV_SIZEOF_DATA(data)-1) >>= (INT_BSIZE-1);
+  }
+
+  int small_shift = shift%INT_BSIZE;
+
+  if(small_shift != 0)
+  {
+    for(int i = 0; i < SIGNEDBV_SIZEOF_DATA(data)-1; i++)
+    {
+      data_at(i) = ((unsigned)data_at(i)) >> small_shift;
+      data_at(i) += data_at(i+1) << (INT_BSIZE - small_shift);
+    }
+    data_at(SIGNEDBV_SIZEOF_DATA(data)-1) >>= small_shift;
+  }
+
+#ifdef __BV_DEBUG
+  bool most_significant_bit = (*this)[W-1];
+  assert(  (most_significant_bit == true && data_at(SIGNEDBV_SIZEOF_DATA(data)-1) < 0) ||
+      (most_significant_bit == false && data_at(SIGNEDBV_SIZEOF_DATA(data)-1) >= 0));
+#endif
+
+  return *this;
+}
+
+// Shift operator
+
+  template<int W>
+__signedbv<W> operator << (const __signedbv<W>& bv , int i)
+{
+  __signedbv<W> tmp(bv);
+  tmp <<= i;
+  return tmp;
+}
+
+  template<int W>
+__signedbv<W> operator >> (const __signedbv<W>& bv , int i)
+{
+  __signedbv<W> tmp(bv);
+  tmp >>= i;
+  return tmp;
+}
+
+// Printing operator
+
+#ifdef __LITTLE_ENDIAN__
+  template<int W>
+std::ostream& operator << ( std::ostream& os, const __signedbv<W>& bv)
+{
+
+  for(int i = SIGNEDBV_SIZEOF_DATA(bv.data) -1 ; i >= 0 ; i--)
+  {
+    unsigned int d = bv.data_at(i);
+    for(int j = 0; j < INT_BSIZE; j++)
+    {
+      os << (d >> sizeof(unsigned int)*8-1) ;
+      d <<= 1;
+    }
+    os <<'\'' ;
+  }
+  return os;
+}
+#endif
+
+// Concatenation
+template<int W1, int W2>
+__signedbv<W1+W2> __concatenation(const __signedbv<W1>&, const __signedbv<W2>&);
+
+#endif
+
+// ---
+
+
 namespace scoot{
 
 // cpp::struct.TopLevelAndGateSimulation
