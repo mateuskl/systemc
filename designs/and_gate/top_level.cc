@@ -39,6 +39,8 @@ SC_MODULE(TopLevelAndGateSimulation)
     void doand()
     {       
         std::cout << "doand: " << iter << "\n";
+
+        assert(iter <= 10);
         
         if (iter < 10)
         {
