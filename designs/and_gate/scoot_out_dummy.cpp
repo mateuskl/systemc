@@ -4,11 +4,16 @@
 #define CPROVER_INFINITY 1
 #endif
 
-#include <__bv.h>
-#include <__nondet.h>
-#include <__print.h>
-#include <__schedule.h>
-#include <iostream>
+// #include <__bv.h>
+// #include <__nondet.h>
+// #include <__print.h>
+// #include <__schedule.h>
+// #include <iostream>
+
+template <int W>
+struct __signedbv;
+
+
 namespace scoot{
 
 // cpp::struct.TopLevelAndGateSimulation
