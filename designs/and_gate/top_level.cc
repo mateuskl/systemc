@@ -4,7 +4,7 @@
 
 #include "and_gate.hh"
 
-#define TRACE 1
+#define TRACE 0
 
 SC_MODULE(TopLevelAndGateSimulation)
 {
@@ -88,7 +88,6 @@ int sc_main(int argc, char *argv[])
     }
 #endif
     
-    //sc_start(0);
     sc_start(10, SC_US);
     
 
