@@ -43,6 +43,11 @@ check:
 check2:
 	cbmc scoot_exhaustive_out-cbmc.cpp --bounds-check --pointer-check -I $(INCLUDES_FOR_CBMC) -I /usr/local/local_programs/scoot/include/stl -I /usr/local/local_programs/scoot/include/systemc -I /usr/local/local_programs/scoot/include/tlm -I /usr/local/local_programs/scoot/include
 
+check3:
+	cbmc_wp scoot_out.cpp --bounds-check --pointer-check -I /usr/local/local_programs/scoot/include/bv -I /usr/local/local_programs/scoot/include/stl -I /usr/local/local_programs/scoot/include/systemc -I /usr/local/local_programs/scoot/include/tlm -I /usr/local/local_programs/scoot/include
+
+check4:
+	cbmc_wp scoot_exhaustive_out-cbmc.cpp --bounds-check --pointer-check -I /usr/local/local_programs/scoot/include/bv -I /usr/local/local_programs/scoot/include/stl -I /usr/local/local_programs/scoot/include/systemc -I /usr/local/local_programs/scoot/include/tlm -I /usr/local/local_programs/scoot/include
 
 
 # ------------------------------------------------------------------------------
