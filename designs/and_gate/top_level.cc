@@ -46,7 +46,7 @@ SC_MODULE(TopLevelAndGateSimulation)
         }
         else
         {
-            sc_stop();
+            // sc_stop();
         }
     }
     
@@ -89,7 +89,7 @@ int sc_main(int argc, char *argv[])
 #endif
     
     //sc_start(0);
-    sc_start();
+    sc_start(10, SC_US);
     
 
 #if TRACE    
